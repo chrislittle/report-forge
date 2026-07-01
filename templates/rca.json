@@ -1,0 +1,23 @@
+{
+  "title": "INCIDENT — Root Cause Analysis",
+  "subtitle": "RCA summary",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Author", "value": "Name" },
+    { "label": "Severity", "value": "Sev N" }
+  ],
+  "assetsDir": "assets",
+  "verdict": { "tone": "danger", "body": "**Impact:** who/what was affected and for how long." },
+  "sections": [
+    { "heading": "1. Summary", "body": "One-paragraph incident summary." },
+    { "heading": "2. Timeline",
+      "table": { "headers": ["Time", "Event"], "rows": [ ["…", "…"] ] } },
+    { "heading": "3. Root Cause", "body": "The underlying cause." },
+    { "heading": "4. Contributing Factors", "body": "- Factor one\n- Factor two" },
+    { "heading": "5. Resolution", "body": "How it was resolved / mitigated." },
+    { "heading": "6. Corrective Actions",
+      "table": { "headers": ["Action", "Owner", "Status"], "rows": [ ["…", "…", "Open"] ] } },
+    { "heading": "References", "links": [ { "text": "Link", "url": "https://example.com" } ] }
+  ],
+  "footer": "Generated YYYY-MM-DD"
+}

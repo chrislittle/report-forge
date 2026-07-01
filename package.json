@@ -1,0 +1,46 @@
+{
+  "name": "report-forge",
+  "version": "1.0.0",
+  "description": "Generate self-contained HTML reports (embedded images, highlighted code, verified links) from a simple manifest. Vendor-neutral, zero runtime dependencies.",
+  "keywords": [
+    "report",
+    "html",
+    "documentation",
+    "rca",
+    "findings",
+    "runbook",
+    "self-contained",
+    "screenshot",
+    "playwright"
+  ],
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "report-forge": "scripts/cli.js",
+    "report-forge-build": "scripts/report-forge.js",
+    "report-forge-capture": "scripts/capture.js"
+  },
+  "main": "scripts/report-forge.js",
+  "files": [
+    "scripts/",
+    "references/",
+    "templates/",
+    "SKILL.md",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {},
+  "optionalDependencies": {},
+  "peerDependencies": {
+    "playwright": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "playwright": {
+      "optional": true
+    }
+  }
+}

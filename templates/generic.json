@@ -1,0 +1,15 @@
+{
+  "title": "REPORT TITLE",
+  "subtitle": "One-line summary of what this document is",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Author", "value": "Name" }
+  ],
+  "assetsDir": "assets",
+  "sections": [
+    { "heading": "1. Overview", "body": "What this report covers." },
+    { "heading": "2. Details", "body": "Body text with **bold**, `code`, and\n- bullet one\n- bullet two" },
+    { "heading": "References", "links": [ { "text": "Link", "url": "https://example.com" } ] }
+  ],
+  "footer": "Generated YYYY-MM-DD"
+}

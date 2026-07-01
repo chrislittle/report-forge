@@ -1,0 +1,25 @@
+{
+  "title": "OPTIONS — Comparison & Recommendation",
+  "subtitle": "Side-by-side evaluation",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Author", "value": "Name" }
+  ],
+  "assetsDir": "assets",
+  "verdict": { "tone": "ok", "body": "**Recommendation:** the option we recommend and why (one line)." },
+  "sections": [
+    { "heading": "1. Context", "body": "What decision this informs." },
+    { "heading": "2. Comparison",
+      "table": {
+        "headers": ["Criterion", "Option A", "Option B", "Option C"],
+        "rows": [
+          ["Cost", "…", "…", "…"],
+          ["Complexity", "…", "…", "…"],
+          ["Risk", "…", "…", "…"]
+        ]
+      } },
+    { "heading": "3. Recommendation", "body": "The recommended option with rationale and trade-offs." },
+    { "heading": "References", "links": [ { "text": "Link", "url": "https://example.com" } ] }
+  ],
+  "footer": "Generated YYYY-MM-DD"
+}

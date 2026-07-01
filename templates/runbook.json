@@ -1,0 +1,25 @@
+{
+  "title": "PROCEDURE — Remediation Runbook",
+  "subtitle": "Step-by-step remediation guide",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Author", "value": "Name" },
+    { "label": "Applies to", "value": "scope" }
+  ],
+  "assetsDir": "assets",
+  "sections": [
+    { "heading": "1. Prerequisites", "body": "- Prereq one\n- Prereq two" },
+    { "heading": "2. Procedure",
+      "blocks": [
+        { "type": "subheading", "text": "Step 1 — …" },
+        { "type": "text", "body": "What to do." },
+        { "type": "code", "language": "bash", "code": "# command here", "caption": "Run this." },
+        { "type": "subheading", "text": "Step 2 — …" },
+        { "type": "text", "body": "Next action." }
+      ] },
+    { "heading": "3. Validation", "body": "How to confirm success." },
+    { "heading": "4. Rollback", "body": "How to revert if needed." },
+    { "heading": "References", "links": [ { "text": "Link", "url": "https://example.com" } ] }
+  ],
+  "footer": "Generated YYYY-MM-DD"
+}

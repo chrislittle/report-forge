@@ -1,0 +1,37 @@
+{
+  "title": "SUBJECT — Reproduction & Root Cause",
+  "subtitle": "Reproduction and root-cause findings",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Author", "value": "Name" },
+    { "label": "Environment", "value": "region / build / version" }
+  ],
+  "assetsDir": "assets",
+  "verdict": {
+    "tone": "warn",
+    "body": "**Root cause confirmed:** short statement of what reproduces, where, and why."
+  },
+  "sections": [
+    { "heading": "1. Objective", "body": "What behaviour we set out to reproduce and the expected correct behaviour." },
+    { "heading": "2. Reproduction Result",
+      "table": {
+        "headers": ["Method", "Environment", "Result", "Status"],
+        "rows": [ ["…", "…", "…", "REPRODUCED"] ],
+        "highlightRows": [1]
+      },
+      "body": "Scoping note on what does / does not reproduce." },
+    { "heading": "3. Root Cause", "body": "The confirmed root cause in plain language." },
+    { "heading": "4. Evidence",
+      "blocks": [
+        { "type": "subheading", "text": "Screenshot 1 — …" },
+        { "type": "image", "src": "shot1.png", "caption": "…" },
+        { "type": "subheading", "text": "Relevant snippet" },
+        { "type": "code", "src": "artifact.json", "language": "json",
+          "highlight": { "wrap": ["START_MARKER", "END_MARKER"] },
+          "caption": "The offending block, highlighted." }
+      ] },
+    { "heading": "5. Reproduction Steps", "body": "- Step 1\n- Step 2\n- Step 3" },
+    { "heading": "6. References", "links": [ { "text": "Docs", "url": "https://example.com" } ] }
+  ],
+  "footer": "Generated YYYY-MM-DD"
+}

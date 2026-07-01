@@ -69,11 +69,18 @@ Accept evidence in whatever way is easiest for the user — **you** place it:
 - **Pasted text** (a snippet, a stack trace) → you save it as a file in assets, or
   embed it inline via a `code` block with `"code": "..."`.
 - **Screenshot the user already has** → they point you at the file/path; you embed it.
-- **Screenshot of a web page they don't have** → offer to capture it for them:
-  - **Preferred:** if a **Playwright MCP** is connected, call `browser_navigate`
-    then `browser_take_screenshot`, and save the PNG into the assets folder.
-  - **Fallback (no MCP):** run `scripts/capture.js screenshot <url> <assets>/<name>.png`
-    (needs Playwright locally — you handle that, silently).
+- **Screenshot of a web page they don't have** → offer to capture it for them.
+  Two independent paths (use whichever is available):
+  - **Preferred — Playwright MCP:** if a Playwright MCP server is connected to the
+    agent, call `browser_navigate` then `browser_take_screenshot`, and save the PNG
+    into the assets folder. No local install needed. (The MCP is configured in the
+    agent by the user — it is NOT installed by report-forge.)
+  - **Fallback — Playwright library:** if there's no MCP, run
+    `node scripts/capture.js screenshot <url> <assets>/<name>.png`. This needs the
+    Playwright npm library locally (`npm i playwright && npx playwright install
+    chromium`, or `report-forge init --with-playwright`). Handle this silently.
+  - Note the distinction: *Playwright* is a browser-automation library; *Playwright
+    MCP* is a server built on it that exposes browser tools to the agent.
 - **Code / config / template / logs** → after taking the file or text, ask **which
   part to highlight** (a line range, or a marked block via `highlight.wrap`).
 

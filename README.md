@@ -12,6 +12,21 @@
 write-ups, root-cause analyses, remediation runbooks, comparisons — with embedded
 images, highlighted code, and link-checked references, all in a single `.html`.
 
+## Contents
+
+| | Section | |
+|---|---------|---|
+| 🚀 | [Quick start](#quick-start) | Install + first report in two steps |
+| 📦 | [Installation](#installation) | Prerequisites and 6 install options |
+| 💬 | [How it works](#how-it-works) | The conversational experience |
+| ✨ | [Features](#features) | What it produces |
+| 🖼️ | [Screenshots & PDF (Playwright)](#screenshots--pdf-playwright) | MCP vs. local capture, and setup |
+| 🛠️ | [CLI reference](#cli-reference) | Setup commands (init, update, status…) |
+| ⚙️ | [Advanced](#advanced-running-the-engine-directly) | Running the engine directly |
+| 📁 | [Repository structure](#repository-structure) | File tree |
+| 🔒 | [Privacy & data](#privacy--data) | How it handles your data |
+| 📄 | [License](#license) | MIT |
+
 ---
 
 ## Quick start
@@ -46,8 +61,9 @@ That's it. See **[Installation](#installation)** for other install options, or
 - **An AI agent** that reads skills from `.github/skills/` or `~/.copilot/skills/`
   (e.g. GitHub Copilot CLI).
 - **[Playwright](https://playwright.dev/)** *(optional)* — only for capturing web
-  screenshots or exporting PDF. Skip it if you supply your own images or your agent
-  has a Playwright MCP.
+  screenshots or exporting PDF, via **either** a Playwright MCP in your agent **or**
+  the bundled local helper. See [Screenshots & PDF](#screenshots--pdf-playwright).
+  Skip it entirely if you supply your own images.
 
 `init` checks these for you and tells you what's missing.
 
@@ -148,6 +164,81 @@ link, and normalising text so the file renders identically everywhere.
 - 🔤 **Portable text** — smart quotes / dashes / arrows normalised to entities
 - 🧩 **Report types** — reproduction, RCA, runbook, comparison, generic
 - 🖼️ **Auto screenshots + PDF** — via a Playwright MCP or the bundled helper
+
+## Screenshots & PDF (Playwright)
+
+report-forge can embed screenshots you already have, or capture web pages for you.
+Capturing uses **Playwright** — and there are two independent paths. You need
+**either one**, not both:
+
+### Path 1 — Playwright MCP (preferred, zero local setup)
+
+If your agent has the **[Playwright MCP](https://github.com/microsoft/playwright-mcp)**
+connected, the agent drives a browser directly through MCP tools
+(`browser_navigate`, `browser_take_screenshot`) and drops the PNG into the assets
+folder. Nothing to install locally.
+
+> **This MCP is configured in your agent, not by report-forge.** It is intentionally
+> out of scope for this package's installer so the skill stays agent-agnostic.
+> Add it once to your agent's MCP configuration — the standard config is:
+>
+> ```json
+> {
+>   "mcpServers": {
+>     "playwright": { "command": "npx", "args": ["@playwright/mcp@latest"] }
+>   }
+> }
+> ```
+>
+> **GitHub Copilot CLI** — add it interactively with the slash command:
+>
+> ```
+> /mcp add
+> ```
+>
+> …or create/edit `~/.copilot/mcp-config.json`:
+>
+> ```json
+> {
+>   "mcpServers": {
+>     "playwright": {
+>       "type": "local",
+>       "command": "npx",
+>       "tools": ["*"],
+>       "args": ["@playwright/mcp@latest"]
+>     }
+>   }
+> }
+> ```
+>
+> Then **restart Copilot CLI** (MCP servers load at startup) and confirm with `/mcp`
+> — you should see `playwright` with tools like `browser_navigate` and
+> `browser_take_screenshot`. See the
+> [Playwright MCP repo](https://github.com/microsoft/playwright-mcp) for other
+> clients (VS Code, Cursor, Claude, etc.).
+
+### Path 2 — Playwright library (local fallback)
+
+No MCP? The bundled `scripts/capture.js` uses the **Playwright npm library**
+locally. Install it once:
+
+```bash
+npm i -D playwright && npx playwright install chromium
+```
+
+…or let `init` do it: `... init --with-playwright`. Then report-forge falls back to
+`capture.js` automatically.
+
+### Don't need web capture at all?
+
+Skip Playwright entirely — just hand the agent screenshots you already have, and it
+embeds them. Playwright is **only** for capturing pages you *don't* already have an
+image of, and for PDF export.
+
+> **Playwright vs. Playwright MCP:** *Playwright* is a browser-automation library
+> (an npm package). *Playwright MCP* is a separate MCP **server** built on top of it
+> that lets an agent drive the browser through tool calls. report-forge prefers the
+> MCP when present and falls back to the library.
 
 ## CLI reference
 

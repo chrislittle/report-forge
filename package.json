@@ -1,6 +1,6 @@
 {
   "name": "report-forge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generate self-contained HTML reports (embedded images, highlighted code, verified links) from a simple manifest. Vendor-neutral, zero runtime dependencies.",
   "keywords": [
     "report",

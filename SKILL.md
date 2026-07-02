@@ -1,3 +1,15 @@
+---
+name: report-forge
+description: >-
+  Create a polished, self-contained HTML report through conversation — the user
+  describes what they need in plain language and the agent asks a few guiding
+  questions, captures any screenshots, assembles the report, and hands back one
+  finished HTML file (PDF optional). Use this skill when the user says "create a
+  report", "make a findings report", "build an HTML report", "write an RCA",
+  "remediation runbook", "reproduction report", "comparison report", "turn this
+  into a report", or "document this for the team".
+---
+
 # report-forge
 
 Create a polished, self-contained HTML report **through conversation**. The user
@@ -73,8 +85,12 @@ Accept evidence in whatever way is easiest for the user — **you** place it:
   Two independent paths (use whichever is available):
   - **Preferred — Playwright MCP:** if a Playwright MCP server is connected to the
     agent, call `browser_navigate` then `browser_take_screenshot`, and save the PNG
-    into the assets folder. No local install needed. (The MCP is configured in the
-    agent by the user — it is NOT installed by report-forge.)
+    into the assets folder. No local *library* install needed. (The MCP is configured
+    in the agent by the user — it is NOT installed by report-forge.) **First-use
+    gotcha:** the MCP defaults to the `chrome` channel; if it errors with
+    `Chromium distribution 'chrome' is not found ... Run "npx playwright install chrome"`,
+    run `npx playwright install chrome` (or `npx playwright install chromium`) once,
+    then retry the navigate/screenshot. This is a one-time per-machine browser install.
   - **Fallback — Playwright library:** if there's no MCP, run
     `node scripts/capture.js screenshot <url> <assets>/<name>.png`. This needs the
     Playwright npm library locally (`npm i playwright && npx playwright install

@@ -3,6 +3,23 @@
 All notable changes to `report-forge` are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-07-02
+
+### Fixed
+- **`SKILL.md` now loads as a skill.** Added the required YAML frontmatter block
+  (`name` + `description` with trigger phrases). Previously the file started at the
+  `# report-forge` heading, so agents rejected it with
+  *"missing or malformed YAML frontmatter"* and the skill would not load.
+
+### Added / Docs
+- **Playwright MCP browser-binary step documented.** The MCP defaults to the
+  `chrome` channel, so first-time capture can fail with
+  *"Chromium distribution 'chrome' is not found ... Run npx playwright install chrome"*.
+  README Path 1 and `SKILL.md` now call this out and instruct running
+  `npx playwright install chrome` (or `chromium`) once per machine, plus the
+  `--browser chromium` MCP option. Corrected the misleading "Nothing to install
+  locally" wording.
+
 ## [1.0.0] — 2026-07-01
 
 Initial release.

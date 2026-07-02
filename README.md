@@ -176,7 +176,25 @@ Capturing uses **Playwright** — and there are two independent paths. You need
 If your agent has the **[Playwright MCP](https://github.com/microsoft/playwright-mcp)**
 connected, the agent drives a browser directly through MCP tools
 (`browser_navigate`, `browser_take_screenshot`) and drops the PNG into the assets
-folder. Nothing to install locally.
+folder. No local *library* install is needed — but the MCP still needs a **browser
+binary** the first time (see note below).
+
+> **⚠️ First-use browser install (common gotcha).** The Playwright MCP defaults to
+> the **`chrome`** channel. If the browser binary isn't present you'll see an error
+> like:
+> ```
+> Chromium distribution 'chrome' is not found at C:\...\chrome.exe
+> Run "npx playwright install chrome"
+> ```
+> Fix it once with:
+> ```bash
+> npx playwright install chrome
+> # (or, to use the bundled Chromium instead of channel chrome:)
+> npx playwright install chromium
+> ```
+> This is a one-time, per-machine step — the MCP reuses the binary afterward. If you
+> prefer Chromium over Chrome, launch the MCP with `--browser chromium` in its args.
+
 
 > **This MCP is configured in your agent, not by report-forge.** It is intentionally
 > out of scope for this package's installer so the skill stays agent-agnostic.

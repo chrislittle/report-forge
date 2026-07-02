@@ -267,7 +267,7 @@ The bundled CLI is only for **setup** — you never use it to make reports.
 | `init [--global\|--dir <path>] [--with-playwright] [--force]` | Install the skill |
 | `update` | Re-install latest over existing installs (auto-detects project + global) |
 | `status` | Show install locations, versions, and prerequisite check |
-| `doctor` | Check prerequisites (Node, Playwright) |
+| `doctor` | Check prerequisites (Node, Playwright library, **and browser binary** — bundled Chromium and/or the Chrome channel used by the Playwright MCP), with the exact install command if a browser is missing |
 | `uninstall [--global\|--dir <path>]` | Remove an install |
 | `--version` | Print version |
 

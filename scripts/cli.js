@@ -10,7 +10,7 @@
  *   npx github:chrislittle/report-forge status               Show install locations + versions
  *   npx github:chrislittle/report-forge uninstall            Remove an install (--global / --dir as needed)
  *   npx github:chrislittle/report-forge --version            Print version
- *   npx github:chrislittle/report-forge doctor               Check prerequisites (Node, Playwright)
+ *   npx github:chrislittle/report-forge doctor               Check prerequisites (Node, Playwright, browser binary)
  *
  * Flags:
  *   --with-playwright   During init, also install Playwright + Chromium (for screenshots/PDF)
@@ -56,15 +56,69 @@ function hasPlaywright(fromDir) {
   try { require.resolve('playwright', { paths: [fromDir || process.cwd(), PKG_ROOT] }); return true; }
   catch (_) { return false; }
 }
+
+// Where Playwright caches its downloaded browser binaries.
+function playwrightCacheDir() {
+  const envPath = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (envPath && envPath !== '0') return envPath;
+  const home = os.homedir();
+  if (process.platform === 'win32') return path.join(home, 'AppData', 'Local', 'ms-playwright');
+  if (process.platform === 'darwin') return path.join(home, 'Library', 'Caches', 'ms-playwright');
+  return path.join(home, '.cache', 'ms-playwright');
+}
+
+// Bundled Chromium (installed via `npx playwright install chromium`) — used by the
+// local capture.js helper.
+function hasBundledChromium() {
+  try {
+    return fs.readdirSync(playwrightCacheDir())
+      .some((e) => /^chromium([-_]|$)/.test(e));
+  } catch (_) { return false; }
+}
+
+// System Google Chrome — used by the Playwright MCP's default `chrome` channel
+// (installed via `npx playwright install chrome`). Returns the path or null.
+function systemChromePath() {
+  const home = os.homedir();
+  let cands = [];
+  if (process.platform === 'win32') {
+    const pf = process.env.ProgramFiles || 'C:\\Program Files';
+    const pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+    const la = process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local');
+    cands = [
+      path.join(pf, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(pf86, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+      path.join(la, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    ];
+  } else if (process.platform === 'darwin') {
+    cands = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
+  } else {
+    cands = ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/opt/google/chrome/chrome'];
+  }
+  for (const p of cands) { try { if (fs.existsSync(p)) return p; } catch (_) { /* ignore */ } }
+  return null;
+}
+
 function checkPrereqs(destForPlaywright) {
   const nodeOk = nodeMajor() >= MIN_NODE;
   const pw = hasPlaywright(destForPlaywright);
-  return { nodeOk, nodeVersion: process.versions.node, playwright: pw };
+  const chromium = hasBundledChromium();
+  const chrome = systemChromePath();
+  return { nodeOk, nodeVersion: process.versions.node, playwright: pw, chromium, chrome };
 }
 function printPrereqs(p) {
   console.log('\nPrerequisites:');
   console.log(`  ${p.nodeOk ? 'OK ' : 'X  '} Node.js ${p.nodeVersion} ${p.nodeOk ? '(>=' + MIN_NODE + ')' : '(need >= ' + MIN_NODE + ')'}`);
-  console.log(`  ${p.playwright ? 'OK ' : '-- '} Playwright ${p.playwright ? 'available' : 'not installed (optional — only for screenshots/PDF)'}`);
+  console.log(`  ${p.playwright ? 'OK ' : '-- '} Playwright library ${p.playwright ? 'available' : 'not installed (optional — only for the local capture.js helper)'}`);
+  const browserOk = p.chromium || p.chrome;
+  console.log(`  ${browserOk ? 'OK ' : '-- '} Browser binary ${browserOk ? 'found' : 'not found (optional — needed for screenshots/PDF)'}`);
+  if (p.chromium) console.log('        - bundled Chromium (capture.js / library path)');
+  if (p.chrome) console.log(`        - Google Chrome channel 'chrome' (Playwright MCP default): ${p.chrome}`);
+  if (!browserOk) {
+    console.log('        Install one when you need web capture:');
+    console.log('          npx playwright install chromium   # local capture.js helper');
+    console.log('          npx playwright install chrome      # Playwright MCP default channel');
+  }
 }
 
 function installPlaywright(cwd) {
@@ -195,9 +249,20 @@ function doUninstall(o) {
 
 function doDoctor() {
   console.log(`report-forge v${version()} — environment check`);
-  printPrereqs(checkPrereqs());
+  const p = checkPrereqs();
+  printPrereqs(p);
   console.log('\nCore report generation needs only Node ' + MIN_NODE + '+.');
-  console.log('Playwright is optional (screenshots + PDF).');
+  console.log('Screenshots + PDF are optional and need a browser via one of two paths:');
+  console.log("  • Playwright MCP (agent-driven) — uses the 'chrome' channel by default;");
+  console.log('      if capture fails with "Chromium distribution \'chrome\' is not found",');
+  console.log('      run:  npx playwright install chrome');
+  console.log('  • Local capture.js helper — needs the Playwright library + Chromium:');
+  console.log('      run:  npm i -D playwright && npx playwright install chromium');
+  if (!p.chromium && !p.chrome) {
+    console.log("\n-- No browser binary detected. Web-capture will fail until you install one (see above).");
+  } else {
+    console.log('\nOK  A browser binary is available for capture.');
+  }
 }
 
 function help() {

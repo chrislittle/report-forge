@@ -75,40 +75,60 @@ for you."** Never assume they have nothing; never make them find a folder.
 > in doubt, ask for the path or the pasted content.
 
 Accept evidence in whatever way is easiest for the user — **you** place it:
+
+> **📁 Working-folder rule (do this first, avoid clutter).** Keep ALL working files
+> — screenshots, pasted snippets, the JSON manifest — inside a single **temp working
+> folder**, never the project root. Mint one at the start with
+> `node scripts/capture.js tmpdir` (it prints a fresh `os.tmpdir()/report-forge-XXXX/`
+> path with an `assets/` subfolder ready).
+> Reference it as the manifest's `assetsDir`. Because the engine base64-**embeds**
+> every image into the single output HTML, these source files are throwaway — **delete
+> the temp folder after the build** (step 5). Nothing should ever be left in the
+> project root.
+
 - **A file they already have** (image, ARM template JSON, config, log) → they give
-  you the **path** or **paste** it. **You copy/read it into the report's working
-  assets folder yourself.** The user never manages a folder.
-- **Pasted text** (a snippet, a stack trace) → you save it as a file in assets, or
-  embed it inline via a `code` block with `"code": "..."`.
+  you the **path** or **paste** it. **You copy/read it into the temp working folder's
+  `assets/` yourself.** The user never manages a folder.
+- **Pasted text** (a snippet, a stack trace) → you save it as a file in the temp
+  `assets/`, or embed it inline via a `code` block with `"code": "..."`.
 - **Screenshot the user already has** → they point you at the file/path; you embed it.
 - **Screenshot of a web page they don't have** → offer to capture it for them.
   Two independent paths (use whichever is available):
   - **Preferred — Playwright MCP:** if a Playwright MCP server is connected to the
     agent, call `browser_navigate` then `browser_take_screenshot`, and save the PNG
-    into the assets folder. No local *library* install needed. (The MCP is configured
-    in the agent by the user — it is NOT installed by report-forge.) **First-use
-    gotcha:** the MCP defaults to the `chrome` channel; if it errors with
-    `Chromium distribution 'chrome' is not found ... Run "npx playwright install chrome"`,
-    run `npx playwright install chrome` (or `npx playwright install chromium`) once,
-    then retry the navigate/screenshot. This is a one-time per-machine browser install.
+    **directly into the temp working folder's `assets/`**. No local *library* install
+    needed. (The MCP is configured in the agent by the user — it is NOT installed by
+    report-forge.) **First-use gotcha:** the MCP defaults to the `chrome` channel; if
+    it errors with `Chromium distribution 'chrome' is not found ... Run "npx playwright
+    install chrome"`, run `npx playwright install chrome` (or `npx playwright install
+    chromium`) once, then retry the navigate/screenshot. This is a one-time per-machine
+    browser install.
+    - ⚠️ **Cleanup:** some MCP configs write the screenshot to their own output dir (or
+      the project root) first. If that happens, **move** (not copy) the PNG into the
+      temp `assets/` immediately so no stray image is left behind. Verify the root is
+      clean before delivering.
   - **Fallback — Playwright library:** if there's no MCP, run
-    `node scripts/capture.js screenshot <url> <assets>/<name>.png`. This needs the
-    Playwright npm library locally (`npm i playwright && npx playwright install
-    chromium`, or `report-forge init --with-playwright`). Handle this silently.
+    `node scripts/capture.js screenshot <url> <tmp>/assets/<name>.png` — point it
+    straight at the temp `assets/` folder (capture.js creates the folder if needed, so
+    nothing lands in the root). This needs the Playwright npm library locally (`npm i
+    playwright && npx playwright install chromium`, or `report-forge init
+    --with-playwright`). Handle this silently.
   - Note the distinction: *Playwright* is a browser-automation library; *Playwright
     MCP* is a server built on it that exposes browser tools to the agent.
 - **Code / config / template / logs** → after taking the file or text, ask **which
   part to highlight** (a line range, or a marked block via `highlight.wrap`).
 
-> Where do files "live"? Entirely on your side. You maintain a working folder
-> (e.g. a temp dir) with an `assets/` subfolder, drop everything the user gives you
-> there, and reference it from the manifest's `assetsDir`. The user only ever
-> hands you content in chat — they never create folders or move files.
+> Where do files "live"? Entirely on your side, inside the **temp working folder**
+> (`capture.js tmpdir`) with its `assets/` subfolder — you drop everything the user
+> gives you there and reference it from the manifest's `assetsDir`. The user only ever
+> hands you content in chat — they never create folders or move files. **The temp
+> folder is deleted after the build; the delivered HTML is fully self-contained.**
 
 ### 4. Build it (silently, on their behalf)
 Behind the scenes:
-1. Write the JSON manifest to a temp/working location (the user never sees it).
-2. Run `node scripts/report-forge.js <manifest.json> --out <report>.html`.
+1. Write the JSON manifest into the temp working folder (the user never sees it).
+2. Run `node scripts/report-forge.js <tmp>/manifest.json --out <report>.html` — write
+   the finished HTML to where the user wants it (or their cwd), NOT inside the temp folder.
 3. The engine embeds images as base64, highlights the code region, verifies every
    external link, and normalises characters. Review the link report; fix any
    non-200 URL before delivering (broken links = incomplete deliverable).
@@ -116,8 +136,12 @@ Behind the scenes:
 ### 5. Deliver + iterate
 - Give them the finished `.html` (tell them where it is / attach it).
 - Offer a **PDF**: `scripts/capture.js pdf <report>.html <report>.pdf`.
-- Then refine on request — re-run the build after each change. Keep it
-  conversational ("Want the caching note as a callout instead?").
+- **Clean up:** delete the temp working folder once the HTML (and any PDF) is produced
+  — the output is self-contained, so nothing needs to persist. Confirm the project
+  root has no leftover screenshots or manifests.
+- Then refine on request — re-run the build after each change (recreate a temp folder
+  if you already cleaned up). Keep it conversational ("Want the caching note as a
+  callout instead?").
 
 ---
 

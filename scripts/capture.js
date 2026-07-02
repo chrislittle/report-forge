@@ -5,6 +5,7 @@
  *
  *   node capture.js screenshot <url> <out.png> [--selector <css>] [--full] [--width 1280] [--height 900]
  *   node capture.js pdf <htmlFileOrUrl> <out.pdf> [--landscape]
+ *   node capture.js tmpdir                      # print a fresh temp working dir (with assets/) and exit
  *
  * Requires Playwright (optional peer dependency):
  *   npm i -D playwright && npx playwright install chromium
@@ -15,9 +16,24 @@
  * Note: when running inside an agent that has a Playwright MCP server, prefer the
  * MCP browser tools (navigate + screenshot) and just drop the PNG into your
  * assets folder — no local Playwright install needed. See SKILL.md.
+ *
+ * Avoid project-root clutter: always write screenshots into a dedicated temp
+ * working folder (see the `tmpdir` command) — never the project root — and delete
+ * that folder after the report is built (the engine base64-embeds every image, so
+ * the source PNGs are not needed once the HTML exists).
  */
 
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
+// Create a fresh, isolated working dir with an assets/ subfolder. Capture into
+// this and remove it after the build so nothing lingers in the project root.
+function makeTmpDir() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'report-forge-'));
+  fs.mkdirSync(path.join(dir, 'assets'), { recursive: true });
+  return dir;
+}
 
 function parse(argv) {
   const o = { cmd: argv[0], a: argv[1], b: argv[2], selector: null, full: false,
@@ -35,10 +51,21 @@ function parse(argv) {
 
 async function main() {
   const o = parse(process.argv.slice(2));
+
+  // `tmpdir` — mint a clean working dir and print it (no browser needed).
+  if (o.cmd === 'tmpdir') {
+    process.stdout.write(makeTmpDir() + '\n');
+    return;
+  }
+
   if (!o.cmd || !o.a || !o.b) {
-    console.error('Usage:\n  capture screenshot <url> <out.png> [--selector css] [--full]\n  capture pdf <htmlFileOrUrl> <out.pdf> [--landscape]');
+    console.error('Usage:\n  capture screenshot <url> <out.png> [--selector css] [--full]\n  capture pdf <htmlFileOrUrl> <out.pdf> [--landscape]\n  capture tmpdir');
     process.exit(2);
   }
+
+  // Make sure the destination folder exists so callers can write straight into a
+  // temp working dir (avoids the "write to project root, then copy" pattern).
+  fs.mkdirSync(path.dirname(path.resolve(o.b)), { recursive: true });
 
   let chromium;
   try {

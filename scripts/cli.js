@@ -25,7 +25,7 @@ const os = require('os');
 const cp = require('child_process');
 
 const PKG_ROOT = path.resolve(__dirname, '..');
-const PAYLOAD = ['SKILL.md', 'README.md', 'LICENSE', 'package.json', 'scripts', 'references', 'templates'];
+const PAYLOAD = ['SKILL.md', 'README.md', 'LICENSE', 'package.json', 'icon.svg', 'scripts', 'references', 'templates'];
 const MIN_NODE = 18;
 
 function version() {

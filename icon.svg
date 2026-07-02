@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="rf-title rf-desc">
+  <title id="rf-title">report-forge</title>
+  <desc id="rf-desc">A document with a forge spark — report-forge generates polished self-contained HTML reports.</desc>
+
+  <defs>
+    <linearGradient id="rf-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#243244"/>
+      <stop offset="0.55" stop-color="#131E2C"/>
+      <stop offset="1" stop-color="#0A111B"/>
+    </linearGradient>
+    <linearGradient id="rf-ember" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FDE68A"/>
+      <stop offset="0.5" stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+    <radialGradient id="rf-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F59E0B" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#rf-bg)"/>
+  <rect x="4" y="4" width="504" height="504" rx="108" fill="none" stroke="#F59E0B" stroke-opacity="0.12" stroke-width="2"/>
+
+  <!-- document -->
+  <g>
+    <!-- soft shadow -->
+    <path d="M154 122 L306 122 L364 180 L364 398 Q364 412 350 412 L154 412 Q140 412 140 398 L140 136 Q140 122 154 122 Z"
+          fill="#000000" opacity="0.28" transform="translate(6 10)"/>
+    <!-- page -->
+    <path d="M154 116 L306 116 L364 174 L364 392 Q364 406 350 406 L154 406 Q140 406 140 392 L140 130 Q140 116 154 116 Z"
+          fill="#F8FAFC"/>
+    <!-- folded corner (dog-ear) -->
+    <path d="M306 116 L364 174 L306 174 Z" fill="#CBD5E1"/>
+    <path d="M306 116 L306 174 L364 174" fill="none" stroke="#94A3B8" stroke-opacity="0.5" stroke-width="2"/>
+
+    <!-- text lines -->
+    <g fill="#94A3B8">
+      <rect x="176" y="206" width="118" height="13" rx="6.5"/>
+      <rect x="176" y="240" width="152" height="13" rx="6.5"/>
+      <rect x="176" y="274" width="134" height="13" rx="6.5"/>
+      <!-- highlighted line (signature amber accent) -->
+      <rect x="176" y="308" width="100" height="13" rx="6.5" fill="url(#rf-ember)"/>
+      <rect x="176" y="342" width="150" height="13" rx="6.5"/>
+      <rect x="176" y="376" width="96" height="13" rx="6.5"/>
+    </g>
+  </g>
+
+  <!-- forge spark / ember over the top-right corner -->
+  <g>
+    <circle cx="360" cy="126" r="86" fill="url(#rf-glow)"/>
+    <!-- main 4-point sparkle -->
+    <path d="M360 56
+             C360 100 384 118 430 126
+             C384 134 360 152 360 196
+             C360 152 336 134 290 126
+             C336 118 360 100 360 56 Z"
+          fill="url(#rf-ember)"/>
+    <!-- bright core -->
+    <path d="M360 92
+             C360 112 372 121 392 126
+             C372 131 360 140 360 160
+             C360 140 348 131 328 126
+             C348 121 360 112 360 92 Z"
+          fill="#FFFBEB"/>
+    <!-- small secondary sparks -->
+    <path d="M300 74 C300 87 306 92 318 95 C306 98 300 103 300 116 C300 103 294 98 282 95 C294 92 300 87 300 74 Z"
+          fill="url(#rf-ember)" opacity="0.9"/>
+    <path d="M416 176 C416 186 421 190 430 192 C421 194 416 198 416 208 C416 198 411 194 402 192 C411 190 416 186 416 176 Z"
+          fill="url(#rf-ember)" opacity="0.85"/>
+  </g>
+</svg>

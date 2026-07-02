@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="icon.svg" alt="report-forge logo" width="128" height="128">
+</p>
+
 # report-forge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -338,6 +342,7 @@ report-forge/
 ├── LICENSE                  # MIT
 ├── CHANGELOG.md             # release notes
 ├── package.json             # npm/npx metadata + CLI bin entries
+├── icon.svg                 # project logo (README header, favicon, social preview)
 ├── .gitignore               # ignores node_modules + local build output
 ├── scripts/
 │   ├── cli.js               # `report-forge` install/update/status CLI

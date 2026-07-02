@@ -3,6 +3,14 @@
 All notable changes to `report-forge` are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.1.1] — 2026-07-02
+
+### Added
+- **Project icon** (`icon.svg`) — a document + forge-spark mark. Added to the README
+  header, shipped with npm/npx installs (`files`) and the CLI install payload so it
+  travels with the skill. Usable as a docs favicon or (rendered to PNG) a GitHub
+  social-preview image.
+
 ## [1.1.0] — 2026-07-02
 
 ### Added

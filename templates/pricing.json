@@ -1,0 +1,139 @@
+{
+  "title": "Pricing Estimate — WORKLOAD",
+  "subtitle": "REGION_NAME (REGION_CODE) · list and discounted · estimate, not a quote",
+  "meta": [
+    { "label": "Date", "value": "YYYY-MM-DD" },
+    { "label": "Region", "value": "REGION_NAME (REGION_CODE)" },
+    { "label": "Currency", "value": "USD" },
+    { "label": "Discount", "value": "N% off list" },
+    { "label": "Prepared by", "value": "Name" }
+  ],
+  "assetsDir": "assets",
+  "verdict": {
+    "tone": "info",
+    "body": "**This is an estimate, not a quote.** Prices are list rates pulled live from the public Azure Retail Prices API on YYYY-MM-DD and are subject to change. Taxes are excluded. Actual invoiced amounts depend on real usage and the customer's agreement."
+  },
+  "sections": [
+    {
+      "heading": "1. Options at a glance",
+      "body": "One line on what is being priced and the shape of the choice.",
+      "blocks": [
+        {
+          "type": "cards",
+          "cards": [
+            {
+              "name": "Option A — …",
+              "price": "$0.00",
+              "priceNote": "per month · your price",
+              "specs": ["spec", "spec", { "text": "trade-off", "ok": false }]
+            },
+            {
+              "name": "Option B — …",
+              "price": "$0.00",
+              "priceNote": "per month · your price",
+              "variant": "win",
+              "badge": "Lowest cost",
+              "specs": ["spec", "spec"]
+            },
+            {
+              "name": "Option C — …",
+              "price": "$0.00",
+              "priceNote": "per month · your price",
+              "variant": "muted",
+              "badge": "Special case",
+              "specs": [{ "text": "why it is a special case", "ok": false }]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "2. Before you compare",
+      "callout": {
+        "tone": "warn",
+        "body": "Any counter-intuitive pricing behavior the reader must know before reading the numbers — e.g. a constrained-core SKU costing the same as the full size, or storage billing by provisioned tier rather than used GiB. Delete this section if there is nothing surprising."
+      }
+    },
+    {
+      "heading": "3. How to choose",
+      "table": {
+        "headers": ["Option", "Key spec", "Your price / mo", "Choose it when"],
+        "align": ["left", "left", "right", "left"],
+        "rows": [
+          ["A — …", "…", "$0.00", "…"],
+          ["B — …", "…", "$0.00", "…"],
+          ["C — …", "…", "$0.00", "…"]
+        ],
+        "rowClasses": { "2": "win" }
+      }
+    },
+    {
+      "heading": "4. What drives the cost",
+      "table": {
+        "headers": ["Component", "Your price / mo", "Share"],
+        "align": ["left", "right", "right"],
+        "rows": [
+          ["Compute", "$0.00", "0%"],
+          ["Storage", "$0.00", "0%"],
+          ["License", "$0.00", "0%"],
+          ["Networking", "$0.00", "0%"],
+          ["Total", "$0.00", "100%"]
+        ],
+        "rowClasses": { "5": "tot" }
+      }
+    },
+    {
+      "heading": "5. The decision that matters more",
+      "body": "The secondary choice that moves the number more than the headline one — commonly the disk tier, the redundancy setting, or the commitment term. Show the delta."
+    },
+    {
+      "heading": "6. Commitment options",
+      "body": "Only include this section if the customer asked about commitments. Show pay-as-you-go against each commitment on the same basis.",
+      "table": {
+        "headers": ["Model", "Effective / hr", "Your price / mo", "vs PAYG", "Commitment"],
+        "align": ["left", "right", "right", "right", "left"],
+        "rows": [
+          ["Pay-as-you-go", "$0.000000", "$0.00", "—", "None"],
+          ["Savings Plan 1yr", "$0.000000", "$0.00", "0%", "Hourly spend, flexible"],
+          ["Savings Plan 3yr", "$0.000000", "$0.00", "0%", "Hourly spend, flexible"],
+          ["Reserved 1yr", "$0.000000", "$0.00", "0%", "This size/region"],
+          ["Reserved 3yr", "$0.000000", "$0.00", "0%", "This size/region"]
+        ]
+      }
+    },
+    {
+      "heading": "7. Assumptions",
+      "body": "- **Hours:** 730 per month (continuous running)\n- **Rates:** Azure Retail Prices API, list, USD, captured YYYY-MM-DD\n- **Discount:** N% applied to … (state exactly what it covers)\n- **Redundancy:** …\n- **Modeled:** …\n- **Not Modeled:** taxes, support plans, egress beyond the stated allowance, …"
+    },
+    {
+      "heading": "8. Next steps",
+      "body": "1. Question back to the customer.\n2. Question back to the customer.\n3. Question back to the customer."
+    },
+    {
+      "heading": "References",
+      "links": [
+        { "text": "Azure Retail Prices API", "url": "https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices" }
+      ]
+    },
+    {
+      "blocks": [{ "type": "divider" }]
+    },
+    {
+      "heading": "Full itemization",
+      "body": "Every meter behind the numbers above. Unit prices are shown at full precision; line totals are rounded to 2dp and sum to the displayed total.",
+      "table": {
+        "headers": ["Service", "Description", "Qty", "Unit", "Unit price", "List / mo", "Your price / mo"],
+        "align": ["left", "left", "right", "left", "right", "right", "right"],
+        "rows": [
+          ["Option A", "", "", "", "", "", ""],
+          ["Virtual Machines", "…", "730", "Hour", "$0.000000", "$0.00", "$0.00"],
+          ["Storage", "…", "1", "Month", "$0.000000", "$0.00", "$0.00"],
+          ["", "Subtotal — Option A", "", "", "", "$0.00", "$0.00"],
+          ["", "Monthly total — Option A", "", "", "", "$0.00", "$0.00"]
+        ],
+        "rowClasses": { "1": "grp", "4": "sub", "5": "tot" }
+      }
+    }
+  ],
+  "footer": "Estimate generated YYYY-MM-DD · list prices from the Azure Retail Prices API · not a quote"
+}

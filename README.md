@@ -24,6 +24,7 @@ images, highlighted code, and link-checked references, all in a single `.html`.
 | 📦 | [Installation](#installation) | Prerequisites and 6 install options |
 | 💬 | [How it works](#how-it-works) | The conversational experience |
 | ✨ | [Features](#features) | What it produces |
+| 💰 | [Azure pricing estimates](#azure-pricing-estimates) | Live rates, commitments, discounts |
 | 🖼️ | [Screenshots & PDF (Playwright)](#screenshots--pdf-playwright) | MCP vs. local capture, and setup |
 | 🛠️ | [CLI reference](#cli-reference) | Setup commands (init, update, status…) |
 | ⚙️ | [Advanced](#advanced-running-the-engine-directly) | Running the engine directly |
@@ -166,8 +167,40 @@ link, and normalising text so the file renders identically everywhere.
 - 🔗 **Automatic link verification** — broken URLs are flagged before you send
 - 🎨 **Themeable, no branding** — neutral by default; set your own accent colour
 - 🔤 **Portable text** — smart quotes / dashes / arrows normalised to entities
-- 🧩 **Report types** — reproduction, RCA, runbook, comparison, generic
+- 🧩 **Report types** — reproduction, RCA, runbook, comparison, pricing estimate, generic
+- 💰 **Azure pricing estimates** — the agent interviews you, pulls **live** rates from
+  the public Azure Retail Prices API (PAYG, Reserved Instances, Savings Plans, Hybrid
+  Benefit), applies your discount, and emits option cards plus a full itemization
 - 🖼️ **Auto screenshots + PDF** — via a Playwright MCP or the bundled helper
+
+## Azure pricing estimates
+
+Ask for a **pricing estimate** and the skill switches into an interview: what you're
+pricing, which region, how long it runs, whether the customer has a discount off list
+and what it covers, whether to show commitment options, and any quantities that
+actually drive the cost. Every question comes with a sensible default you can accept.
+
+It then pulls the numbers **live** from the public
+[Azure Retail Prices API](https://learn.microsoft.com/rest/api/cost-management/retail-prices/azure-retail-prices)
+— no subscription or authentication needed — and builds the document:
+
+- **Option cards** side by side, with the lowest-cost option highlighted
+- **Pay-as-you-go, Reserved Instances (1yr/3yr), Savings Plans and Azure Hybrid
+  Benefit** modeled on the same basis so they're actually comparable
+- **List and discounted prices side by side** — never one without the other
+- **A full itemization** of every meter, at full unit-price precision, where the
+  line items add up to the printed total
+- **Assumptions stated**, including anything the customer didn't know and had to be
+  defaulted
+
+> It always says *"this is an estimate, not a quote"* and records the date the rates
+> were captured. Prices are never recalled from the model's memory — if the API can't
+> be reached, the skill tells you rather than guessing.
+
+The full interview script, the verified API recipes (including the traps — reservation
+`retailPrice` is the whole-term total, savings plans need the preview `api-version`,
+and Hybrid Benefit is a different meter rather than a discount) and the rounding rules
+live in [`references/PRICING_GUIDE.md`](references/PRICING_GUIDE.md).
 
 ## Screenshots & PDF (Playwright)
 
@@ -349,8 +382,9 @@ report-forge/
 │   ├── report-forge.js      # core engine (zero deps)
 │   └── capture.js           # optional Playwright screenshot/PDF helper
 ├── references/
-│   └── REPORT_SPEC.md       # manifest schema + worked example
-└── templates/               # repro · rca · runbook · comparison · generic
+│   ├── REPORT_SPEC.md       # manifest schema + worked example
+│   └── PRICING_GUIDE.md     # pricing interview, Retail Prices API recipes, math rules
+└── templates/               # repro · rca · runbook · comparison · pricing · generic
 ```
 
 ## Privacy & data

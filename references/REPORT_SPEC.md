@@ -123,6 +123,31 @@ with `<` are passed through as raw HTML.
 ```
 `highlightRows` is 1-based; listed rows get a highlighted background.
 
+**`align`** — optional per-column alignment, one entry per column. Only `right` and
+`center` have an effect (`left` is the default). Numeric columns render with tabular
+figures so digits line up.
+
+```json
+"align": ["left", "left", "right", "right"]
+```
+
+**`rowClasses`** — optional styling per row, keyed by 1-based row number. Useful for
+financial and summary tables.
+
+```json
+"rowClasses": { "1": "grp", "4": "sub", "5": "tot" }
+```
+
+| Class | Renders as |
+|-------|-----------|
+| `grp`   | Group header row — grey background, accent text |
+| `sub`   | Subtotal — light grey, bold |
+| `tot`   | Total — green, bold, heavy top border |
+| `win`   | Recommended/winning row — green tint |
+| `muted` | De-emphasised row — grey text |
+
+Unknown class names are ignored.
+
 ### Blocks
 
 `blocks` is an ordered array. Supported block types:
@@ -162,6 +187,38 @@ Highlight modes (choose one):
 ```json
 { "type": "html", "html": "<div class=\"callout ok\">Custom.</div>" }
 ```
+
+**divider** — a horizontal rule, for splitting a document into halves (e.g. the
+decision-maker summary from the detailed itemization).
+```json
+{ "type": "divider" }
+```
+
+**cards** — option cards laid out side by side (they wrap responsively and are kept
+whole when printing). Designed for "here are your options" comparisons.
+```json
+{
+  "type": "cards",
+  "cards": [
+    { "name": "Option A — D4s v5",
+      "price": "$158.41", "priceNote": "per month · your price",
+      "specs": ["4 vCPU", "16 GiB", { "text": "No local SSD", "ok": false }] },
+    { "name": "Option B — D4as v5",
+      "price": "$142.35", "priceNote": "per month · your price",
+      "variant": "win", "badge": "Lowest cost",
+      "specs": ["4 vCPU", "16 GiB"] }
+  ]
+}
+```
+
+| Card field | Notes |
+|------------|-------|
+| `name`      | Card heading |
+| `price`     | Large headline figure |
+| `priceNote` | Small grey line under the price |
+| `variant`   | `win` (green border, green price) or `muted` (dashed border, grey price). Omit for standard |
+| `badge`     | Small pill at the top of the card. Renders grey when `variant` is `muted` |
+| `specs`     | Array. A plain string renders with a tick; `{ "text": "…", "ok": false }` renders with a dash for a trade-off |
 
 ### Links
 

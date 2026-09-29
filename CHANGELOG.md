@@ -3,6 +3,46 @@
 All notable changes to `report-forge` are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] — 2026-09-29
+
+### Added
+- **Pricing estimate report type** (`templates/pricing.json`) — a guided flow that
+  interviews the user about a cloud workload, pulls live rates from the public Azure
+  Retail Prices API, applies a customer discount, and emits option cards plus a full
+  itemization. Front half for the decision maker, back half for whoever checks the math.
+- **`references/PRICING_GUIDE.md`** — the interview script (what to ask, in what order,
+  with a sensible default for every question), verified Retail Prices API recipes for
+  consumption / reservations / savings plans / Azure Hybrid Benefit, the rounding and
+  presentation rules, and the pre-issue validation checklist. Hardened against the
+  traps that produce materially wrong numbers across Azure's service catalog:
+  - `unitOfMeasure` is only `1 Hour` for ~66% of meters — `10K`/`1M` are multipliers
+    and `1/Month` is already monthly, so the general rule is
+    `cost = quantity / unitSize x retailPrice x unitsRequired`
+  - graduated pricing via `tierMinimumUnits`, applied **after** normalizing the
+    quantity into billing units (thresholds are in billing units, not raw events)
+  - a meter's unit is often not one instance — SQL Database is priced **per vCore**
+  - regionless and `Global` meters (RHEL/SUSE licenses) are missed by a region filter
+  - duplicate catalog rows sharing a `meterId` must be de-duplicated, not summed
+  - reservation terms include 1 Month and 5/10 Years, priced per reservation unit
+  - savings plan commitments bill every hour of the term, not just workload runtime
+  - the "AHB = non-Windows meter" shortcut is Windows-Server-on-VMs only
+  - free allowances may be zero-price API bands *or* absent entirely (AKS Free)
+  - currencies are queried natively, never converted
+- **`cards` block type** — option cards laid out side by side, with `win` (green) and
+  `muted` (dashed) variants, an optional badge, and spec lists that render ticks for
+  features and dashes for trade-offs. Kept whole when printing.
+- **`divider` block type** — a horizontal rule for splitting a document into a summary
+  half and a detail half.
+- **Table `align`** — per-column alignment; numeric columns render with tabular figures.
+- **Table `rowClasses`** — `grp` (group header), `sub` (subtotal), `tot` (total),
+  `win`, `muted`, keyed by 1-based row number.
+
+### Changed
+- `SKILL.md` — pricing added to the report-type menu and trigger phrases, plus a
+  dedicated pricing flow section.
+- `references/REPORT_SPEC.md` — documents `cards`, `divider`, `align` and `rowClasses`.
+- `README.md` — new "Azure pricing estimates" section.
+
 ## [1.1.1] — 2026-07-02
 
 ### Added

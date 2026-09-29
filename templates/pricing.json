@@ -122,6 +122,7 @@
       "heading": "Full itemization",
       "body": "Every meter behind the numbers above. Unit prices are shown at full precision; line totals are rounded to 2dp and sum to the displayed total.",
       "table": {
+        "wide": true,
         "headers": ["Service", "Description", "Qty", "Unit", "Unit price", "List / mo", "Your price / mo"],
         "align": ["left", "left", "right", "left", "right", "right", "right"],
         "rows": [

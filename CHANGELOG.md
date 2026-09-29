@@ -3,6 +3,42 @@
 All notable changes to `report-forge` are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] — 2026-09-29
+
+Fixes found by testing the pricing type cold, in a clean environment.
+
+### Fixed
+- **Markdown pipe tables in `body` rendered as literal text.** The body renderer
+  handled paragraphs, bullets, inline markup and raw HTML, but not tables — so an
+  agent writing a perfectly ordinary Markdown table into a section body produced
+  `<p>| Disk configuration | List / mo |</p>` in the output. `mdBlock()` now parses
+  GitHub-style pipe tables, honoring `---:` and `:---:` for right and center
+  alignment. A lone `|` in prose is untouched; the alignment row is what makes a table.
+
+### Added
+- **`wide: true` on a table** — lets a dense itemization (7+ columns) break out of the
+  1040px text column instead of wrapping every figure. Reverts to normal width below
+  1220px and when printing. Applied to the pricing template's full itemization.
+- Numeric columns (`ta-right`) no longer wrap mid-figure.
+
+### Changed
+- **Requirement-first interview.** The skill previously asked users to choose VM sizes
+  and disk tiers by name, which assumes catalog knowledge the reader of an estimate
+  rarely has. It now asks what the workload *needs* — CPU and memory, workload shape,
+  processor constraints, capacity and performance — then derives the candidate SKUs
+  itself and explains each in plain language for confirmation. A user who already
+  knows the SKU can still just name it.
+- **Guide additions:** turning requirements into a SKU shortlist (match, discard what
+  cannot be deployed, one per processor family, explain, confirm); turning storage
+  requirements into a tier; and the warning that a newer generation is not
+  automatically cheaper — verified in Central US, `D4s_v6` prices above `D4s_v5`.
+- **Skill description rewritten to compete honestly.** Adopts the `WHEN:` /
+  `DO NOT USE FOR:` convention, and draws an explicit boundary: historical spend and
+  bill forecasting belong to `azure-cost`, SKU recommendation with no document to
+  produce belongs to `azure-compute`, quota belongs to `azure-quotas`. This skill owns
+  the deliverable, not the lookup. Previously the pricing triggers sat behind nine
+  report-centric ones and the skill was never selected for pricing work.
+
 ## [1.2.0] — 2026-09-29
 
 ### Added

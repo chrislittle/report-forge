@@ -1,14 +1,23 @@
 ---
 name: report-forge
 description: >-
-  Create a polished, self-contained HTML report through conversation — the user
-  describes what they need in plain language and the agent asks a few guiding
-  questions, captures any screenshots, assembles the report, and hands back one
-  finished HTML file (PDF optional). Use this skill when the user says "create a
-  report", "make a findings report", "build an HTML report", "write an RCA",
-  "remediation runbook", "reproduction report", "comparison report", "turn this
-  into a report", "document this for the team", "pricing estimate", "cost
-  estimate", "what would this cost on Azure", or "price this workload".
+  Turn a conversation into a polished, self-contained HTML document - either a
+  technical report or a priced Azure estimate. The user describes what they need in
+  plain language; the agent asks a few guiding questions, gathers evidence or pulls
+  live pricing, assembles the document, verifies every link, and hands back one
+  finished HTML file (PDF optional).
+  WHEN (reports): "create a report", "make a findings report", "build an HTML
+  report", "write an RCA", "remediation runbook", "reproduction report", "comparison
+  report", "turn this into a report", "document this for the team".
+  WHEN (pricing): "pricing estimate", "cost estimate", "price this workload", "what
+  would this cost on Azure", "build me an estimate", "quote this", "estimate for the
+  customer", "how much would this cost per month", "compare these options on cost" -
+  anything that needs a shareable priced document with options, assumptions and a
+  full itemization. The skill queries the public Azure Retail Prices API itself.
+  DO NOT USE FOR: reporting what has already been spent, or forecasting an existing
+  bill (use azure-cost); recommending a VM SKU as an end in itself, with no document
+  to produce (use azure-compute); checking or requesting quota (use azure-quotas).
+  This skill owns the deliverable, not the lookup.
 ---
 
 # report-forge
@@ -24,8 +33,14 @@ invoke silently in the background.
 
 **Trigger phrases:** "create a report", "make a findings report", "build an HTML
 report", "write an RCA", "remediation runbook", "turn this into a report",
-"document this for the team", "pricing estimate", "cost estimate", "what would this
-cost on Azure", "price this workload".
+"document this for the team", "pricing estimate", "cost estimate", "price this
+workload", "what would this cost on Azure", "build me an estimate", "quote this".
+
+> **Boundary with the Azure skills.** If the user wants to know what they *have
+> spent*, that is `azure-cost`. If they want a SKU recommended with no document to
+> produce, that is `azure-compute`. If they want quota, that is `azure-quotas`.
+> This skill is for when the answer has to be a **document someone can send** -
+> options, assumptions, itemization, list and discounted prices side by side.
 
 ---
 
@@ -195,21 +210,80 @@ steps. Full detail, including every verified API recipe, is in
 
 ### Interview (two or three questions at a time, always offer a default)
 
-1. **What and where** — workload in plain language, region, currency (default USD,
-   queried natively — never converted), and, **for time-based meters only**, hours per
+> **Never ask the user to name a SKU, a disk tier or a meter.** They may not know
+> them, and the person who receives the estimate almost certainly does not. Ask what
+> the workload *needs*; you translate that into SKUs and show your working for
+> confirmation. If the user volunteers a SKU, use it.
+
+1. **What and where** - workload in plain language, region, currency (default USD,
+   queried natively - never converted), and, **for time-based meters only**, hours per
    month (default 730 = continuous).
-2. **The discount** — does the customer have a percentage off list, and **what does it
+2. **The shape of the machine** - ask for requirements, not part numbers:
+   *how much CPU and memory*, or simply *what it runs*; **what kind of workload**
+   (general purpose, memory-heavy, compute-heavy, burstable or dev/test); and any
+   **constraints** (must be Intel, AMD acceptable, Arm acceptable, needs local SSD,
+   needs zone redundancy). Then derive candidates and present them - see
+   **[Deriving SKU candidates](#deriving-sku-candidates)** below.
+3. **Storage** - ask **capacity** and **what the disk has to do** (just hold data, or
+   sustain real IOPS and throughput). Do not ask for a P-tier. Warn about the tier
+   cliff and the redundancy premium once you have the numbers.
+4. **The discount** - does the customer have a percentage off list, and **what does it
    apply to** (first-party consumption only, or also licenses/storage/marketplace)?
    If there is no discount, show list only and say so.
-3. **The shape** — one configuration or 2–3 options side by side? Any commitment
-   appetite (1yr/3yr Reserved, Savings Plans)? Any existing licenses eligible for
-   Azure Hybrid Benefit?
-4. **Quantities** — **inspect the meters first, then ask the dimensions that actually
-   bill.** Hours only for time-based meters; for serverless ask executions and
-   memory-duration, RUs, input/output tokens, actions, operations or vCPU-seconds.
-   Include benefit-unit counts (vCores, PTUs, RU/s blocks). Offer a sensible default
-   for each; if the user still does not know, use it and record it in Assumptions in
-   their own words.
+5. **Commitments and licenses** - any appetite for 1yr/3yr Reserved or Savings Plans?
+   Any existing licenses eligible for Azure Hybrid Benefit?
+6. **Remaining quantities** - only the dimensions that actually bill for the services
+   in scope. Offer a sensible default for each; if the user still does not know, use
+   it and record it in Assumptions in their own words.
+
+### Deriving SKU candidates
+
+The user gives you requirements. You produce the shortlist.
+
+1. **Find sizes that match** the vCPU and memory requirement in the target region -
+   `az vm list-skus -l <region> --resource-type virtualMachines` filtered on the
+   capability values, or the Retail Prices API by `armSkuName` pattern.
+2. **Drop anything the customer cannot actually deploy.** Check the region for
+   restrictions, and check Microsoft Learn for capacity growth restrictions and
+   retirement dates. A correct price for a series they cannot grow into is a bad
+   estimate.
+3. **Offer one per processor family**, usually three: AMD, Intel, and Arm where the
+   workload could take it.
+4. **Explain the choice in the customer's language**, not the catalog's:
+
+   > "For 4 vCPU and 16 GiB general purpose in Central US I would price three.
+   > **D4as_v5 (AMD)** - the cheapest mainstream x86 option.
+   > **D4s_v5 (Intel)** - if the workload is validated on Intel or needs AVX-512.
+   > **D4ps_v5 (Arm)** - cheapest of the three, but only if your binaries are
+   > Arm-compatible. Swap any of these before I price them."
+
+5. **Confirm before pricing.** The user should be agreeing to a shortlist they
+   understand, not approving part numbers.
+
+> **Newer is not automatically cheaper.** Verified in Central US: `D4s_v6` prices
+> **above** `D4s_v5` ($0.228 vs $0.217 per hour). If a newer generation costs more,
+> say so plainly rather than letting the reader assume v6 is the upgrade-and-save
+> option. Pair it with lifecycle context - v5 is Extended, v6 and v7 are Current, and
+> v3 and older carry capacity growth restrictions.
+
+### Translating storage requirements
+
+Same rule: capacity and performance in, tier out.
+
+| The user says | You work out |
+|---|---|
+| "1 TB of space, nothing special" | Standard SSD or Premium at the tier that fits; mention the cheaper option |
+| "1 TB and it needs to be fast" | Premium tier that meets the IOPS/throughput target, or Premium SSD v2 |
+| "it has to survive a datacenter failure" | ZRS - and quote the premium, it is substantial |
+
+Then tell them the two things that move the number most:
+
+- **Tier cliffs.** Premium SSD v1 bills by provisioned tier, snapped up. 1,024 GiB is
+  exactly P30; one GiB more jumps to P40 and roughly doubles the line.
+- **Redundancy premium.** ZRS runs materially above LRS for the same capacity. Verified
+  Central US: P30 ZRS $202.755 against P30 LRS $135.17 per month, about 50% more.
+- **Premium SSD v2** bills capacity, IOPS and throughput as three separate meters and
+  is often cheaper at matched performance - but it cannot be an OS disk.
 
 ### Fetch and verify
 

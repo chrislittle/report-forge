@@ -44,16 +44,60 @@ function inline(s) {
   return t;
 }
 
-// Block markdown-lite: paragraphs + "-"/"*" bullet lists + raw-HTML passthrough.
+// Block markdown-lite: paragraphs + "-"/"*" bullet lists + pipe tables + raw-HTML passthrough.
 function mdBlock(s) {
   if (s == null) return '';
   const lines = String(s).split(/\r?\n/);
   let html = '';
   let inList = false;
   const flush = () => { if (inList) { html += '</ul>'; inList = false; } };
-  for (const raw of lines) {
-    const line = raw.trim();
+
+  // A GitHub-style alignment row: |---|---:|:--:|
+  const isTableSep = (l) =>
+    /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(l);
+  const isTableRow = (l) => l.startsWith('|') && l.length > 1;
+  const splitRow = (l) => {
+    let t = l.trim();
+    if (t.startsWith('|')) t = t.slice(1);
+    if (t.endsWith('|')) t = t.slice(0, -1);
+    return t.split('|').map((c) => c.trim());
+  };
+  const alignOf = (cell) => {
+    const c = cell.trim();
+    const l = c.startsWith(':');
+    const r = c.endsWith(':');
+    if (l && r) return 'center';
+    if (r) return 'right';
+    return '';
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
     if (line === '') { flush(); continue; }
+
+    // Pipe table: a row line immediately followed by an alignment row.
+    if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1].trim())) {
+      flush();
+      const headers = splitRow(line);
+      const aligns = splitRow(lines[i + 1].trim()).map(alignOf);
+      const cls = (n) => (aligns[n] ? ` class="ta-${aligns[n]}"` : '');
+      let body = '';
+      let j = i + 2;
+      for (; j < lines.length; j++) {
+        const r = lines[j].trim();
+        if (!isTableRow(r)) break;
+        const cells = splitRow(r);
+        body += '<tr>' +
+          cells.map((c, n) => `<td${cls(n)}>${inline(c)}</td>`).join('') +
+          '</tr>';
+      }
+      html += '<table><thead><tr>' +
+        headers.map((h, n) => `<th${cls(n)}>${inline(h)}</th>`).join('') +
+        '</tr></thead><tbody>' + body + '</tbody></table>';
+      i = j - 1;
+      continue;
+    }
+
     if (/^[-*]\s+/.test(line)) {
       if (!inList) { html += '<ul>'; inList = true; }
       html += `<li>${inline(line.replace(/^[-*]\s+/, ''))}</li>`;
@@ -128,7 +172,10 @@ function renderTable(t) {
     return a === 'right' || a === 'center' ? ` class="ta-${a}"` : '';
   };
 
-  let h = '<table><thead><tr>' +
+  // `wide: true` lets a dense financial table break out of the text column.
+  const tableCls = t.wide ? ' class="wide"' : '';
+
+  let h = `<table${tableCls}><thead><tr>` +
     t.headers.map((x, i) => `<th${alignCls(i)}>${inline(x)}</th>`).join('') +
     '</tr></thead><tbody>';
 
@@ -250,7 +297,11 @@ ul{margin:8px 0;padding-left:22px;}li{margin:4px 0;}
 a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
 hr.rule{border:0;border-top:1px solid var(--line);margin:34px 0 8px;}
 .ta-right{text-align:right;}.ta-center{text-align:center;}
-td.ta-right,th.ta-right{font-variant-numeric:tabular-nums;}
+td.ta-right,th.ta-right{font-variant-numeric:tabular-nums;white-space:nowrap;}
+table.wide{width:calc(100% + 150px);max-width:none;margin-left:-75px;margin-right:-75px;font-size:12.5px;}
+table.wide th,table.wide td{padding:7px 10px;}
+@media (max-width:1220px){table.wide{width:100%;margin-left:0;margin-right:0;}}
+@media print{table.wide{width:100%;margin-left:0;margin-right:0;}}
 tr.grp td{background:#eef0f3;font-weight:600;color:var(--accent-dark);}
 tr.sub td{background:#f5f6f8;font-weight:600;}
 tr.tot td{background:#f1f9f3;font-weight:700;color:var(--ok);border-top:2px solid var(--ok);}

@@ -15,6 +15,12 @@ real prices, how to do the math, and what must be true before you hand it over.
 Ask in this order. Two or three questions at a time — not one giant form. Offer a
 sensible default with every question so the user can just say "yes".
 
+> **The golden rule of the interview: ask for requirements, never for part numbers.**
+> Do not ask which VM size, which disk tier, or which meter. Many users do not know
+> them, and the person the estimate gets forwarded to almost certainly does not. Ask
+> what the workload needs; **you** translate that into SKUs and show the translation
+> for confirmation. If the user volunteers a SKU, take it and move on.
+
 ### Round 1 — what and where (always ask)
 
 | Ask | Why it matters | Default to offer |
@@ -64,8 +70,8 @@ and mark it as an assumption in the report.
 
 | Service | Ask | Sensible default |
 |---|---|---|
-| Virtual machines | Size, OS, count, hours | — / Linux / 1 / 730 |
-| Managed disks | Type, size, count. **Premium v2 and Ultra also bill IOPS and throughput separately** | P30 1 TiB |
+| Virtual machines | **Requirements, not a SKU:** vCPU and memory (or what it runs), workload shape (general purpose / memory-heavy / compute-heavy / burstable), processor constraint (Intel only / AMD fine / Arm fine), count, hours | — / general purpose / AMD fine / 1 / 730 |
+| Managed disks | **Capacity, and what the disk must do** — hold data, or sustain IOPS and throughput. Count and redundancy. **Premium v2 and Ultra also bill IOPS and throughput separately** | 1 TiB, standard performance, LRS |
 | Storage accounts | Tier, redundancy, capacity, transactions | Hot, LRS |
 | Bandwidth | Egress GB/month | 100 GB — flag it as a guess |
 | Backup | Protected instance size, retention | 30 days |
@@ -87,6 +93,46 @@ and mark it as an assumption in the report.
 > **Unknown quantities:** ask, offer a default, and if the customer still does not
 > know, use the default *and list it under Assumptions in the customer's words*
 > ("egress not yet measured; modeled at 100 GB/month"). Never silently invent a number.
+
+### Turning requirements into a shortlist
+
+The user supplies requirements. You produce the candidate SKUs and explain them.
+
+1. **Match the requirement** — find sizes offering the vCPU and memory in the target
+   region, via `az vm list-skus -l <region> --resource-type virtualMachines` filtered
+   on capabilities, or the Retail Prices API by `armSkuName`.
+2. **Discard what cannot be deployed** — check regional restrictions, then check
+   Microsoft Learn for capacity growth restrictions and retirement dates. A correct
+   price for a series the customer cannot grow into is still a bad estimate.
+3. **Shortlist one per processor family** — typically AMD, Intel, and Arm where the
+   workload could take it.
+4. **Explain each in the customer's language**, then confirm before pricing:
+
+> "For 4 vCPU and 16 GiB general purpose in Central US I would price three.
+> **D4as_v5 (AMD)** — the cheapest mainstream x86 option. **D4s_v5 (Intel)** — if the
+> workload is validated on Intel or needs AVX-512. **D4ps_v5 (Arm)** — cheapest of the
+> three, but only if your binaries are Arm-compatible. Swap any before I price them."
+
+> **Newer is not automatically cheaper.** Verified in Central US: `D4s_v6` prices
+> **above** `D4s_v5` — $0.228 against $0.217 per hour. Say so plainly rather than
+> letting the reader assume the newer generation is the upgrade-and-save option. Pair
+> it with lifecycle context: v5 is Extended, v6 and v7 are Current, and v3 and older
+> carry capacity growth restrictions.
+
+### Turning storage requirements into a tier
+
+| The user says | You work out |
+|---|---|
+| "1 TB, nothing special" | Standard SSD, or Premium at the fitting tier — mention the cheaper option |
+| "1 TB and it must be fast" | The Premium tier meeting the IOPS and throughput target, or Premium SSD v2 |
+| "it must survive a datacenter failure" | ZRS — and quote the premium, it is substantial |
+
+Then surface the two things that move the number most:
+
+- **Tier cliffs.** Premium SSD v1 bills by provisioned tier, snapped up. 1,024 GiB is
+  exactly P30; one GiB more becomes P40 and roughly doubles the line.
+- **Redundancy premium.** Verified Central US: P30 ZRS `202.755` against P30 LRS
+  `135.17` per month — about 50% more for the same capacity.
 
 ---
 

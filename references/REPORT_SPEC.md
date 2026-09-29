@@ -106,8 +106,22 @@ Include only what you need.
 ### Body markdown-lite
 
 Section `body` (and any `text` block) supports: paragraphs, `-`/`*` bullet lists,
-`**bold**`, `*italic*`, `` `code` ``, and `[text](https://url)`. Lines that start
-with `<` are passed through as raw HTML.
+`**bold**`, `*italic*`, `` `code` ``, `[text](https://url)`, and **GitHub-style pipe
+tables**. Lines that start with `<` are passed through as raw HTML.
+
+A pipe table needs the alignment row, exactly as in Markdown — `---:` right-aligns a
+column, `:---:` centers it:
+
+```
+| Disk configuration | List / mo | Your price / mo |
+|---|---:|---:|
+| P30 ZRS — 1,024 GiB | $202.76 | $170.31 |
+| P30 LRS — 1,024 GiB | $135.17 | $113.54 |
+```
+
+A lone `|` in ordinary prose is left alone; the alignment row is what makes it a table.
+For tables that need `rowClasses`, `wide` or `highlightRows`, use the section's
+`table` field instead.
 
 ### Table
 
@@ -138,13 +152,21 @@ financial and summary tables.
 "rowClasses": { "1": "grp", "4": "sub", "5": "tot" }
 ```
 
+**`wide`** — optional boolean. A dense table (7+ columns, such as a full itemization)
+can break out of the 1040px text column so its figures stop wrapping. Falls back to
+normal width below 1220px and when printing.
+
+```json
+"table": { "wide": true, "headers": [...], "rows": [...] }
+```
+
 | Class | Renders as |
 |-------|-----------|
-| `grp`   | Group header row — grey background, accent text |
-| `sub`   | Subtotal — light grey, bold |
+| `grp`   | Group header row — gray background, accent text |
+| `sub`   | Subtotal — light gray, bold |
 | `tot`   | Total — green, bold, heavy top border |
 | `win`   | Recommended/winning row — green tint |
-| `muted` | De-emphasised row — grey text |
+| `muted` | De-emphasized row — gray text |
 
 Unknown class names are ignored.
 
@@ -215,9 +237,9 @@ whole when printing). Designed for "here are your options" comparisons.
 |------------|-------|
 | `name`      | Card heading |
 | `price`     | Large headline figure |
-| `priceNote` | Small grey line under the price |
-| `variant`   | `win` (green border, green price) or `muted` (dashed border, grey price). Omit for standard |
-| `badge`     | Small pill at the top of the card. Renders grey when `variant` is `muted` |
+| `priceNote` | Small gray line under the price |
+| `variant`   | `win` (green border, green price) or `muted` (dashed border, gray price). Omit for standard |
+| `badge`     | Small pill at the top of the card. Renders gray when `variant` is `muted` |
 | `specs`     | Array. A plain string renders with a tick; `{ "text": "…", "ok": false }` renders with a dash for a trade-off |
 
 ### Links

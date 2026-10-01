@@ -106,22 +106,8 @@ Include only what you need.
 ### Body markdown-lite
 
 Section `body` (and any `text` block) supports: paragraphs, `-`/`*` bullet lists,
-`**bold**`, `*italic*`, `` `code` ``, `[text](https://url)`, and **GitHub-style pipe
-tables**. Lines that start with `<` are passed through as raw HTML.
-
-A pipe table needs the alignment row, exactly as in Markdown — `---:` right-aligns a
-column, `:---:` centers it:
-
-```
-| Disk configuration | List / mo | Your price / mo |
-|---|---:|---:|
-| P30 ZRS — 1,024 GiB | $202.76 | $170.31 |
-| P30 LRS — 1,024 GiB | $135.17 | $113.54 |
-```
-
-A lone `|` in ordinary prose is left alone; the alignment row is what makes it a table.
-For tables that need `rowClasses`, `wide` or `highlightRows`, use the section's
-`table` field instead.
+`**bold**`, `*italic*`, `` `code` ``, and `[text](https://url)`. Lines that start
+with `<` are passed through as raw HTML.
 
 ### Table
 
@@ -136,39 +122,6 @@ For tables that need `rowClasses`, `wide` or `highlightRows`, use the section's
 }
 ```
 `highlightRows` is 1-based; listed rows get a highlighted background.
-
-**`align`** — optional per-column alignment, one entry per column. Only `right` and
-`center` have an effect (`left` is the default). Numeric columns render with tabular
-figures so digits line up.
-
-```json
-"align": ["left", "left", "right", "right"]
-```
-
-**`rowClasses`** — optional styling per row, keyed by 1-based row number. Useful for
-financial and summary tables.
-
-```json
-"rowClasses": { "1": "grp", "4": "sub", "5": "tot" }
-```
-
-**`wide`** — optional boolean. A dense table (7+ columns, such as a full itemization)
-can break out of the 1040px text column so its figures stop wrapping. Falls back to
-normal width below 1220px and when printing.
-
-```json
-"table": { "wide": true, "headers": [...], "rows": [...] }
-```
-
-| Class | Renders as |
-|-------|-----------|
-| `grp`   | Group header row — gray background, accent text |
-| `sub`   | Subtotal — light gray, bold |
-| `tot`   | Total — green, bold, heavy top border |
-| `win`   | Recommended/winning row — green tint |
-| `muted` | De-emphasized row — gray text |
-
-Unknown class names are ignored.
 
 ### Blocks
 
@@ -209,38 +162,6 @@ Highlight modes (choose one):
 ```json
 { "type": "html", "html": "<div class=\"callout ok\">Custom.</div>" }
 ```
-
-**divider** — a horizontal rule, for splitting a document into halves (e.g. the
-decision-maker summary from the detailed itemization).
-```json
-{ "type": "divider" }
-```
-
-**cards** — option cards laid out side by side (they wrap responsively and are kept
-whole when printing). Designed for "here are your options" comparisons.
-```json
-{
-  "type": "cards",
-  "cards": [
-    { "name": "Option A — D4s v5",
-      "price": "$158.41", "priceNote": "per month · your price",
-      "specs": ["4 vCPU", "16 GiB", { "text": "No local SSD", "ok": false }] },
-    { "name": "Option B — D4as v5",
-      "price": "$142.35", "priceNote": "per month · your price",
-      "variant": "win", "badge": "Lowest cost",
-      "specs": ["4 vCPU", "16 GiB"] }
-  ]
-}
-```
-
-| Card field | Notes |
-|------------|-------|
-| `name`      | Card heading |
-| `price`     | Large headline figure |
-| `priceNote` | Small gray line under the price |
-| `variant`   | `win` (green border, green price) or `muted` (dashed border, gray price). Omit for standard |
-| `badge`     | Small pill at the top of the card. Renders gray when `variant` is `muted` |
-| `specs`     | Array. A plain string renders with a tick; `{ "text": "…", "ok": false }` renders with a dash for a trade-off |
 
 ### Links
 

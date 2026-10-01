@@ -44,60 +44,16 @@ function inline(s) {
   return t;
 }
 
-// Block markdown-lite: paragraphs + "-"/"*" bullet lists + pipe tables + raw-HTML passthrough.
+// Block markdown-lite: paragraphs + "-"/"*" bullet lists + raw-HTML passthrough.
 function mdBlock(s) {
   if (s == null) return '';
   const lines = String(s).split(/\r?\n/);
   let html = '';
   let inList = false;
   const flush = () => { if (inList) { html += '</ul>'; inList = false; } };
-
-  // A GitHub-style alignment row: |---|---:|:--:|
-  const isTableSep = (l) =>
-    /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(l);
-  const isTableRow = (l) => l.startsWith('|') && l.length > 1;
-  const splitRow = (l) => {
-    let t = l.trim();
-    if (t.startsWith('|')) t = t.slice(1);
-    if (t.endsWith('|')) t = t.slice(0, -1);
-    return t.split('|').map((c) => c.trim());
-  };
-  const alignOf = (cell) => {
-    const c = cell.trim();
-    const l = c.startsWith(':');
-    const r = c.endsWith(':');
-    if (l && r) return 'center';
-    if (r) return 'right';
-    return '';
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+  for (const raw of lines) {
+    const line = raw.trim();
     if (line === '') { flush(); continue; }
-
-    // Pipe table: a row line immediately followed by an alignment row.
-    if (isTableRow(line) && i + 1 < lines.length && isTableSep(lines[i + 1].trim())) {
-      flush();
-      const headers = splitRow(line);
-      const aligns = splitRow(lines[i + 1].trim()).map(alignOf);
-      const cls = (n) => (aligns[n] ? ` class="ta-${aligns[n]}"` : '');
-      let body = '';
-      let j = i + 2;
-      for (; j < lines.length; j++) {
-        const r = lines[j].trim();
-        if (!isTableRow(r)) break;
-        const cells = splitRow(r);
-        body += '<tr>' +
-          cells.map((c, n) => `<td${cls(n)}>${inline(c)}</td>`).join('') +
-          '</tr>';
-      }
-      html += '<table><thead><tr>' +
-        headers.map((h, n) => `<th${cls(n)}>${inline(h)}</th>`).join('') +
-        '</tr></thead><tbody>' + body + '</tbody></table>';
-      i = j - 1;
-      continue;
-    }
-
     if (/^[-*]\s+/.test(line)) {
       if (!inList) { html += '<ul>'; inList = true; }
       html += `<li>${inline(line.replace(/^[-*]\s+/, ''))}</li>`;
@@ -160,67 +116,16 @@ function renderCode(block, baseDir) {
   return `<div class="codewrap">${lang}<pre>${out}</pre></div>${cap}`;
 }
 
-// Row classes usable via table.rowClasses — see REPORT_SPEC.md.
-const ROW_CLASSES = new Set(['grp', 'sub', 'tot', 'win', 'muted', 'hl-row']);
-
 function renderTable(t) {
-  // Optional per-column alignment: ["left","right",...]. Anything not
-  // left/right/center is ignored.
-  const align = Array.isArray(t.align) ? t.align : [];
-  const alignCls = (i) => {
-    const a = align[i];
-    return a === 'right' || a === 'center' ? ` class="ta-${a}"` : '';
-  };
-
-  // `wide: true` lets a dense financial table break out of the text column.
-  const tableCls = t.wide ? ' class="wide"' : '';
-
-  let h = `<table${tableCls}><thead><tr>` +
-    t.headers.map((x, i) => `<th${alignCls(i)}>${inline(x)}</th>`).join('') +
+  let h = '<table><thead><tr>' +
+    t.headers.map((x) => `<th>${inline(x)}</th>`).join('') +
     '</tr></thead><tbody>';
-
   (t.rows || []).forEach((row, i) => {
-    const classes = [];
-    if ((t.highlightRows || []).includes(i + 1)) classes.push('hl-row');
-    // rowClasses: { "3": "sub", "7": "tot" } — keys are 1-based row numbers.
-    const rc = t.rowClasses && t.rowClasses[String(i + 1)];
-    if (rc) {
-      for (const c of String(rc).split(/\s+/)) {
-        if (ROW_CLASSES.has(c) && !classes.includes(c)) classes.push(c);
-      }
-    }
-    const cls = classes.length ? ` class="${classes.join(' ')}"` : '';
-    h += `<tr${cls}>` +
-      row.map((c, j) => `<td${alignCls(j)}>${inline(c)}</td>`).join('') +
-      '</tr>';
+    const cls = (t.highlightRows || []).includes(i + 1) ? ' class="hl-row"' : '';
+    h += `<tr${cls}>` + row.map((c) => `<td>${inline(c)}</td>`).join('') + '</tr>';
   });
-
   h += '</tbody></table>';
   return h;
-}
-
-// Option cards — up to 4 across, each with a price, spec list and optional badge.
-function renderCards(block) {
-  const cards = (block.cards || []).map((c) => {
-    const variant = c.variant === 'win' || c.variant === 'muted' ? ` ${c.variant}` : '';
-    const badge = c.badge
-      ? `<div class="badge${c.variant === 'muted' ? ' gray' : ''}">${inline(c.badge)}</div>`
-      : '';
-    const name = c.name ? `<h4>${inline(c.name)}</h4>` : '';
-    const price = c.price ? `<div class="price">${inline(c.price)}</div>` : '';
-    const priceNote = c.priceNote ? `<div class="price-note">${inline(c.priceNote)}</div>` : '';
-    const specs = Array.isArray(c.specs) && c.specs.length
-      ? '<ul class="spec">' + c.specs.map((s) => {
-        // A spec may be a plain string, or { text, ok:false } for a trade-off.
-        const obj = s && typeof s === 'object';
-        const text = obj ? s.text : s;
-        const no = obj && s.ok === false ? ' class="no"' : '';
-        return `<li${no}>${inline(text)}</li>`;
-      }).join('') + '</ul>'
-      : '';
-    return `<div class="card${variant}">${badge}${name}${price}${priceNote}${specs}</div>`;
-  }).join('');
-  return `<div class="cards">${cards}</div>`;
 }
 
 function renderVerdict(v) {
@@ -240,8 +145,6 @@ function renderSection(sec, baseDir) {
       else if (b.type === 'image') h += renderImage(b, baseDir);
       else if (b.type === 'code') h += renderCode(b, baseDir);
       else if (b.type === 'html') h += b.html || '';
-      else if (b.type === 'cards') h += renderCards(b);
-      else if (b.type === 'divider') h += '<hr class="rule" />';
       else if (b.type === 'text') h += mdBlock(b.body || '');
     }
   }
@@ -295,36 +198,6 @@ pre{background:#1e1e1e;color:#d4d4d4;padding:14px 16px;border-radius:6px;overflo
 img.shot{max-width:100%;border:1px solid var(--line);border-radius:6px;display:block;margin:8px 0;}
 ul{margin:8px 0;padding-left:22px;}li{margin:4px 0;}
 a{color:var(--accent);text-decoration:none;}a:hover{text-decoration:underline;}
-hr.rule{border:0;border-top:1px solid var(--line);margin:34px 0 8px;}
-.ta-right{text-align:right;}.ta-center{text-align:center;}
-td.ta-right,th.ta-right{font-variant-numeric:tabular-nums;white-space:nowrap;}
-table.wide{width:calc(100% + 150px);max-width:none;margin-left:-75px;margin-right:-75px;font-size:12.5px;}
-table.wide th,table.wide td{padding:7px 10px;}
-@media (max-width:1220px){table.wide{width:100%;margin-left:0;margin-right:0;}}
-@media print{table.wide{width:100%;margin-left:0;margin-right:0;}}
-tr.grp td{background:#eef0f3;font-weight:600;color:var(--accent-dark);}
-tr.sub td{background:#f5f6f8;font-weight:600;}
-tr.tot td{background:#f1f9f3;font-weight:700;color:var(--ok);border-top:2px solid var(--ok);}
-tr.win td{background:#f1f9f3;}
-tr.muted td{color:var(--muted);}
-tr.grp td,tr.sub td,tr.tot td,tr.win td{background-clip:padding-box;}
-.cards{display:flex;flex-wrap:wrap;gap:14px;margin:16px 0 6px;align-items:stretch;}
-.card{flex:1 1 220px;min-width:210px;border:1px solid var(--line);border-radius:8px;padding:14px 16px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;flex-direction:column;}
-.card.win{border:2px solid var(--ok);}
-.card.muted{border:1px dashed var(--muted);background:#fcfcfd;}
-.card h4{margin:0 0 6px;font-size:14px;color:var(--ink);}
-.card .price{font-size:23px;font-weight:700;color:var(--accent-dark);line-height:1.2;font-variant-numeric:tabular-nums;}
-.card.win .price{color:var(--ok);}
-.card.muted .price{color:var(--muted);}
-.card .price-note{color:var(--muted);font-size:12px;margin-top:2px;}
-.card .badge{align-self:flex-start;background:var(--ok);color:#fff;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:8px;}
-.card .badge.gray{background:var(--muted);}
-ul.spec{list-style:none;padding:0;margin:10px 0 0;font-size:12.5px;}
-ul.spec li{margin:3px 0;padding-left:16px;position:relative;}
-ul.spec li:before{content:'\\2713';position:absolute;left:0;color:var(--ok);font-weight:700;}
-ul.spec li.no{color:var(--muted);}
-ul.spec li.no:before{content:'\\2013';color:var(--muted);}
-@media print{.card{break-inside:avoid;}table{break-inside:auto;}}
 footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px;}`;
 }
 

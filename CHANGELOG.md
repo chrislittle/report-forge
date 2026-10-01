@@ -3,81 +3,15 @@
 All notable changes to `report-forge` are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/).
 
-## [1.2.1] — 2026-09-29
+## [1.3.0] - 2026-10-01
 
-Fixes found by testing the pricing type cold, in a clean environment.
-
-### Fixed
-- **Markdown pipe tables in `body` rendered as literal text.** The body renderer
-  handled paragraphs, bullets, inline markup and raw HTML, but not tables — so an
-  agent writing a perfectly ordinary Markdown table into a section body produced
-  `<p>| Disk configuration | List / mo |</p>` in the output. `mdBlock()` now parses
-  GitHub-style pipe tables, honoring `---:` and `:---:` for right and center
-  alignment. A lone `|` in prose is untouched; the alignment row is what makes a table.
-
-### Added
-- **`wide: true` on a table** — lets a dense itemization (7+ columns) break out of the
-  1040px text column instead of wrapping every figure. Reverts to normal width below
-  1220px and when printing. Applied to the pricing template's full itemization.
-- Numeric columns (`ta-right`) no longer wrap mid-figure.
-
-### Changed
-- **Requirement-first interview.** The skill previously asked users to choose VM sizes
-  and disk tiers by name, which assumes catalog knowledge the reader of an estimate
-  rarely has. It now asks what the workload *needs* — CPU and memory, workload shape,
-  processor constraints, capacity and performance — then derives the candidate SKUs
-  itself and explains each in plain language for confirmation. A user who already
-  knows the SKU can still just name it.
-- **Guide additions:** turning requirements into a SKU shortlist (match, discard what
-  cannot be deployed, one per processor family, explain, confirm); turning storage
-  requirements into a tier; and the warning that a newer generation is not
-  automatically cheaper — verified in Central US, `D4s_v6` prices above `D4s_v5`.
-- **Skill description rewritten to compete honestly.** Adopts the `WHEN:` /
-  `DO NOT USE FOR:` convention, and draws an explicit boundary: historical spend and
-  bill forecasting belong to `azure-cost`, SKU recommendation with no document to
-  produce belongs to `azure-compute`, quota belongs to `azure-quotas`. This skill owns
-  the deliverable, not the lookup. Previously the pricing triggers sat behind nine
-  report-centric ones and the skill was never selected for pricing work.
-
-## [1.2.0] — 2026-09-29
-
-### Added
-- **Pricing estimate report type** (`templates/pricing.json`) — a guided flow that
-  interviews the user about a cloud workload, pulls live rates from the public Azure
-  Retail Prices API, applies a customer discount, and emits option cards plus a full
-  itemization. Front half for the decision maker, back half for whoever checks the math.
-- **`references/PRICING_GUIDE.md`** — the interview script (what to ask, in what order,
-  with a sensible default for every question), verified Retail Prices API recipes for
-  consumption / reservations / savings plans / Azure Hybrid Benefit, the rounding and
-  presentation rules, and the pre-issue validation checklist. Hardened against the
-  traps that produce materially wrong numbers across Azure's service catalog:
-  - `unitOfMeasure` is only `1 Hour` for ~66% of meters — `10K`/`1M` are multipliers
-    and `1/Month` is already monthly, so the general rule is
-    `cost = quantity / unitSize x retailPrice x unitsRequired`
-  - graduated pricing via `tierMinimumUnits`, applied **after** normalizing the
-    quantity into billing units (thresholds are in billing units, not raw events)
-  - a meter's unit is often not one instance — SQL Database is priced **per vCore**
-  - regionless and `Global` meters (RHEL/SUSE licenses) are missed by a region filter
-  - duplicate catalog rows sharing a `meterId` must be de-duplicated, not summed
-  - reservation terms include 1 Month and 5/10 Years, priced per reservation unit
-  - savings plan commitments bill every hour of the term, not just workload runtime
-  - the "AHB = non-Windows meter" shortcut is Windows-Server-on-VMs only
-  - free allowances may be zero-price API bands *or* absent entirely (AKS Free)
-  - currencies are queried natively, never converted
-- **`cards` block type** — option cards laid out side by side, with `win` (green) and
-  `muted` (dashed) variants, an optional badge, and spec lists that render ticks for
-  features and dashes for trade-offs. Kept whole when printing.
-- **`divider` block type** — a horizontal rule for splitting a document into a summary
-  half and a detail half.
-- **Table `align`** — per-column alignment; numeric columns render with tabular figures.
-- **Table `rowClasses`** — `grp` (group header), `sub` (subtotal), `tot` (total),
-  `win`, `muted`, keyed by 1-based row number.
-
-### Changed
-- `SKILL.md` — pricing added to the report-type menu and trigger phrases, plus a
-  dedicated pricing flow section.
-- `references/REPORT_SPEC.md` — documents `cards`, `divider`, `align` and `rowClasses`.
-- `README.md` — new "Azure pricing estimates" section.
+### Removed
+- **Azure pricing estimate report type** (added in 1.2.0 and 1.2.1), withdrawn. It was an early
+  attempt in which the model looked up meters and did the arithmetic, which proved unreliable.
+  Azure pricing now lives in a dedicated skill with a deterministic pricing engine:
+  [azure-pricing-skill](https://github.com/chrislittle/azure-pricing-skill).
+- The code is back to 1.1.1. This also removes the markdown-table fixes that shipped with 1.2.1.
+  The 1.2.0 and 1.2.1 releases have been withdrawn.
 
 ## [1.1.1] — 2026-07-02
 

@@ -1,6 +1,6 @@
 {
   "name": "report-forge",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Generate self-contained HTML reports (embedded images, highlighted code, verified links) from a simple manifest. Vendor-neutral, zero runtime dependencies.",
   "keywords": [
     "report",
@@ -11,10 +11,7 @@
     "runbook",
     "self-contained",
     "screenshot",
-    "playwright",
-    "pricing",
-    "azure",
-    "cost-estimate"
+    "playwright"
   ],
   "license": "MIT",
   "type": "commonjs",
